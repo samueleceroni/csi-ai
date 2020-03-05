@@ -5,7 +5,6 @@
 #define COLUMNS 8
 #define ROWS 8
 
-
 using namespace std;
 
 struct state {
@@ -64,6 +63,15 @@ void remove_queen(state &curr_state){
 	curr_state.neg_diag.pop_back();
 }
 
+bool column_has_some_free_cell(const state &curr_state, int column){
+	for (int row = 0; row < ROWS; row++){
+		if(is_free_cell(curr_state, row, column)){
+			return true;
+		}
+	}
+	return false;
+}
+
 void handle_curr_state(state &curr_state, vector<vector<int>> &solutions){
 	if(curr_state.queens_row.size() == COLUMNS){
 		solutions.push_back(curr_state.queens_row);
@@ -72,22 +80,76 @@ void handle_curr_state(state &curr_state, vector<vector<int>> &solutions){
 
 	for(auto row : get_free_rows_next_column(curr_state)){
 		place_queen(curr_state, row);
-		// TODO here add pruning
-		handle_curr_state(curr_state, solutions);
+			handle_curr_state(curr_state, solutions);
 		remove_queen(curr_state);
 	}
 }
 
+void draw_board_old(const vector<int> &solution){
+	for(int column = 0; column < COLUMNS; column++){
+		cout << "--";
+	}
+	cout << endl;
+	for(int row = 0; row < ROWS; row++){
+		cout << "|";
+		for(int column = 0; column < COLUMNS; column++){
+			if(solution[column] == row){
+				cout << "Q|";
+			} else {
+				cout << "*|";
+			}
+			
+		}
+		cout << endl;
+		for(int column = 0; column < COLUMNS; column++){
+			cout << "--";
+		}
+		cout << endl;
+	}
+}
+
+void draw_board(const vector<int> &solution){
+	cout << endl;
+	for(int row = 0; row < ROWS; row++){
+		for(int column = 0; column < COLUMNS; column++){
+			if(solution[column] == row){
+				cout << "\033[1;41m"<<"X"<<"\033[0m";
+			} else {
+				cout << "O";
+			}
+		}
+		cout << endl;
+	}
+}
+
+void draw_solutions_loop(const vector<vector<int>> &solutions){
+	int board_selected = 0;
+	do {
+		cout << "Solution to draw (0 to exit): ";
+		cin >> board_selected;
+		if(board_selected < 0 || board_selected > solutions.size()){
+			cout<<"Solution number must be between 1 and " << solutions.size() << " (0 to exit)" << endl;
+			continue;
+		}
+		if(board_selected != 0)
+		{
+			draw_board(solutions[board_selected-1]);
+		}
+	} while(board_selected!=0);
+	cout << "bye"<<endl;
+}
+
 int main(){
-	//time start
+	// time start
 	auto start = chrono::high_resolution_clock::now();
 	state curr_state;
 	vector<vector<int>> solutions;
 	handle_curr_state(curr_state, solutions);
-	//	time end
+	// time end
 	auto stop = chrono::high_resolution_clock::now();
-	//	print time
+	// print time
 	auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
 	cout<<"The program took "<< duration.count() << " microseconds to compute.\n";
 	print_solutions(solutions);
+	draw_solutions_loop(solutions);
 }
