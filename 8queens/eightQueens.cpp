@@ -85,29 +85,6 @@ void handle_curr_state(state &curr_state, vector<vector<int>> &solutions){
 	}
 }
 
-void draw_board_old(const vector<int> &solution){
-	for(int column = 0; column < COLUMNS; column++){
-		cout << "--";
-	}
-	cout << endl;
-	for(int row = 0; row < ROWS; row++){
-		cout << "|";
-		for(int column = 0; column < COLUMNS; column++){
-			if(solution[column] == row){
-				cout << "Q|";
-			} else {
-				cout << "*|";
-			}
-			
-		}
-		cout << endl;
-		for(int column = 0; column < COLUMNS; column++){
-			cout << "--";
-		}
-		cout << endl;
-	}
-}
-
 void draw_board(const vector<int> &solution){
 	cout << endl;
 	for(int row = 0; row < ROWS; row++){
