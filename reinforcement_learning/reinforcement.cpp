@@ -28,6 +28,14 @@ bool is_fail(int x, int y){
 	return x == FAIL_X && y == FAIL_Y;
 }
 
+bool is_legal(int x, int y){
+	return x >= START_X
+		&& y >= START_Y
+		&& x <= MAX_X
+		&& y <= MAX_Y
+		&& !(x == 2 && y == 2);
+}
+
 int normalize_move(int move){
 	if(move < 0){
 		return 4 + (move % 4);
@@ -40,40 +48,40 @@ int normalize_move(int move){
 
 void do_move(int move, int &x, int &y){
 	switch(move){
-		case 0:
-			if(y+1 <= MAX_Y)
+		case GO_UP:
+			if(is_legal(x, y+1))
 				y++;
 			break;
-		case 1:
-			if(x+1 <= MAX_X)
+		case GO_RIGHT:
+			if(is_legal(x+1, y))
 				x++;
 			break;
-		case 2:
-			if(y-1 >= START_Y)
+		case GO_DOWN:
+			if(is_legal(x, y-1))
 				y--;
 			break;
-		case 3:
-			if(x-1 >= START_X)
+		case GO_LEFT:
+			if(is_legal(x-1, y))
 				x--;
 			break;
 		default: do_move(normalize_move(move), x, y);
 	}
 }
 
-int choose_move(int x, int y, const vector<vector<double>>&learning_weights){
+int choose_move(int x, int y, const vector<vector<double>> &learning_weights){
 	int u=0, l=0, d=0, r=0;
 	int cu, cl, cd, cr;
 
-	if(y+1 <= MAX_Y){
+	if(is_legal(x, y + 1)){
 		u = learning_weights[x][y+1]*1000;
 	}
-	if(x+1 <= MAX_X){
+	if(is_legal(x + 1, y)){
 		r = learning_weights[x+1][y]*1000;
 	}
-	if(y-1 >= START_Y){
+	if(is_legal(x, y - 1)){
 		d = learning_weights[x][y-1]*1000;
 	}
-	if(x-1 >= START_X){
+	if(is_legal(x-1, y)){
 		l = learning_weights[x-1][y]*1000;
 	}
 	cu = u; cr = cu + r; cd = cr + d; cl = cd + l;
@@ -90,11 +98,11 @@ int choose_move(int x, int y, const vector<vector<double>>&learning_weights){
 }
 
 void perturbe_move(int &move){
-	int random = rand() % 10;
-	if(random == 0){
+	int random = rand() % 100;
+	if(random <= 10){
 		move = normalize_move(move-1);
 	}
-	if(random == 9){
+	if(random >= 90){
 		move = normalize_move(move+1);
 	}
 }
@@ -125,13 +133,13 @@ void update_learning_weights(const vector<int> &xs, const vector<int> &ys, vecto
 	if(xs.back() != GOAL_X || ys.back() != GOAL_Y){
 		for (int i = 0; i < xs.size(); i++){
 			weights[xs[i]][ys[i]] -= 1;
-			if(weights[xs[i]][ys[i]] < 0.04){
-				weights[xs[i]][ys[i]] = 0.04;
+			if(weights[xs[i]][ys[i]] < 0.05){
+				weights[xs[i]][ys[i]] = 0.05;
 			}
 		}
 	} else {
 		for (int i = 0; i < xs.size(); i++){
-			weights[xs[i]][ys[i]] += 0.04;
+			weights[xs[i]][ys[i]] += 0.05;
 		}
 	}
 
@@ -142,7 +150,7 @@ int main(int argc, char** argv){
 	vector<vector<int>> solutions, solutions_x, solutions_y;
 	vector<pair<double, int>> scores;
 	vector<vector<double>> learning_weights;
-	learning_weights.resize(MAX_X+1, vector<double>(MAX_Y+1, 0.04));
+	learning_weights.resize(MAX_X+1, vector<double>(MAX_Y + 1, 0.05));
 
 	for(auto &x : learning_weights){
 		for (auto y : x){
